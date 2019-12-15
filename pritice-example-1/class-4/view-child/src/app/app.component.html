@@ -1,0 +1,31 @@
+<!-- <app-header></app-header>
+<div class="container">
+  <div class="row">
+    <div class="col-md-12">
+      <app-recipes></app-recipes>
+      <app-shopping-list></app-shopping-list>
+    </div>
+  </div>
+</div> -->
+
+
+<div class="container">
+ 
+<app-test-server (serverCreated)= onServerAdded($event)
+                 (bluePrintCreated)="onBlueprintAdded($event)" ></app-test-server>
+  <hr>
+
+  <!-- 
+
+    // one ex  with out alies 
+
+    <app-test-server-list *ngFor="let serverElement of serverElements" [element]="serverElement"></app-test-server-list>
+
+  -->
+
+
+  <app-test-server-list *ngFor="let serverElement of serverElements" [sevElement]="serverElement"></app-test-server-list>
+</div>
+
+
+

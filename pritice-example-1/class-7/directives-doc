@@ -1,0 +1,203 @@
+ Hi Team,
+ 
+ I created new project, that is showing numbers pls check bellow project
+ 
+ app.componet.html:
+ -----------------
+	ul class="list-group">
+        <li
+          class="list-group-item" *ngFor="let number of numbers">
+          {{number}}
+        </li>
+		
+		displying the numbers
+		
+	
+	Now Goal is displying the click, odd and even numbers.
+	if try like this
+	
+	<li
+          class="list-group-item" *ngFor="let number of numbers" *ngIf="number %2==0">
+          {{number}}
+        </li>
+		
+		get Error, We can't use two structural directives in one place.
+		
+
+
+So Accodinly i will chnage the condition here.
+
+App.componet.html:
+----------------------
+
+<ul class="list-group">
+        <div *ngIf="onlyOdd">
+          <li
+          class="list-group-item" *ngFor="let odd of oddNumbers">
+          {{odd}}
+        </li>
+        </div>
+        <div *ngIf="!onlyOdd">
+          
+        <li
+        class="list-group-item" *ngFor="let even of evenNumbers">
+        {{even}}
+      </li>
+
+        </div>
+		
+		App.component.ts:
+		--------------------
+		 oddNumbers = [1, 3, 5];
+  evenNumbers = [2, 4];
+  onlyOdd = false;
+  
+  
+  same like as we can do
+  
+	<!--[ngClass]="{odd: even % 2 !== 0}"-->
+    <!--[ngStyle]="{backgroundColor: even % 2 !== 0 ? 'yellow' : 'transparent'}"-->
+	<!--[ngClass]="{odd: even % 2 !== 0}"-->
+              <!--[ngStyle]="{backgroundColor: even % 2 !== 0 ? 'yellow' : 'transparent'}"-->
+			  
+			  
+
+
+
+-----------------------------------------***--------------------------------------------------------------------------------------------------
+creating the structural direfctive 
+
+basic-highlight -- create folder,basic-highlight.directive.ts(name)
+
+
+import { Directive, ElementRef, OnInit } from '@angular/core';
+
+@Directive({
+  selector: '[appBasicHighlight]'
+})
+export class BasicHighlightDirective implements OnInit {
+  constructor(private elementRef: ElementRef) {
+  }
+
+  ngOnInit() {
+    this.elementRef.nativeElement.style.backgroundColor = 'green';
+  }
+}
+
+             
+           
+
+app.component.html:
+------------------
+
+<p appBasicHighlight>style me </p>
+
+
+		 
+  this.elementRef.nativeElement.style.backgroundColor = 'green'; //This is not good pratice , to adding style,
+																	this is one way of doing 
+																	
+																	Reasigon : Suppose Angular loading a dom, some were ,this elements not loaded.
+																	
+  
+  
+  Better way is:  To cretae a folder 
+  
+  BetterHighlightDirective.ts
+  --------------------------
+  constructor(private elRef: ElementRef, private renderer: Renderer2) { }
+  this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'blue'); // User renderer, y bcz once your app is loaded in browser,then only to
+																				Angulr set the styles
+																				https://angular.io/api/core/Renderer2
+  
+  app.component.html:
+  --------------------
+	 <p appBetterHighlight>style me online </p>
+  
+  
+  
+  
+  
+  Some Set of Condition HostListner // HostListener reacing to any events place
+  
+  
+  @HostListener('mouseenter') mouseover(eventData: Event) {
+    this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'blue');
+  
+  }
+
+  @HostListener('mouseleave') mouseleave(eventData: Event) {
+     this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'transparent');
+  
+  }
+  
+  ----------------------------------------***-------------------------------------------------------------------------
+  
+  
+  one more simple way is there to set styles useing @HostBinding
+  
+  @HostBinding('style.backgroundColor') backgroundColor: string;
+  @HostListener('mouseenter') mouseover(eventData: Event) {
+    // this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'blue');
+    this.backgroundColor = this.highlightColor;
+  }
+
+  @HostListener('mouseleave') mouseleave(eventData: Event) {
+    // this.renderer.setStyle(this.elRef.nativeElement, 'background-color', 'transparent');
+    this.backgroundColor = this.defaultColor;
+  }
+  
+  
+  
+  
+  
+  // Useing Input() Declarator
+  
+  <p appBetterHighlight highlightColor="blue">style me online </p>
+  
+  better.ts:
+  -------------
+  @Input() highlightColor;
+ 
+  ---------------------------------------------------------------***----------------------------------------------------------------------
+  
+  
+  
+  Creating own structural directive 
+  ng g d unless.directive
+  
+  
+  import { Directive, Input, TemplateRef, ViewContainerRef } from '@angular/core';
+
+@Directive({
+  selector: '[appUnless]'
+})
+export class UnlessDirective {
+  @Input() set appUnless(condition: boolean) {       // use setMethod
+    if (!condition) {
+      this.vcRef.createEmbeddedView(this.templateRef);
+    } else {
+      this.vcRef.clear();
+    }
+  }
+
+  constructor(private templateRef: TemplateRef<any>, private vcRef: ViewContainerRef) { }
+
+}
+
+
+app.component.html:
+----------------
+
+<div *appUnless="onlyOdd">
+          <li
+            class="list-group-item"
+            [ngClass]="{odd: even % 2 !== 0}"
+            [ngStyle]="{backgroundColor: even % 2 !== 0 ? 'yellow' : 'transparent'}"
+            *ngFor="let even of evenNumbers">
+            {{ even }}
+          </li>
+        </div>
+
+  
+       

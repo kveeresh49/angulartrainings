@@ -1,0 +1,216 @@
+Hi Team,
+
+I will Recep the Last class, Go to "Git Hub Account download the Pratice example class-6/component-communication-beginning"
+Then Run ng serve --open
+
+Step - 1    Based on the select , disply the component code, 
+			
+		Header.component.Html:
+		---------------------
+		
+		 <ul class="nav navbar-nav">
+        <li><a href="#" (click)="onSelect('recipe')">Recipes</a></li>
+        <li><a href="#" (click)="onSelect('shopping-list')">Shopping List</a></li>
+      </ul>
+	  
+	  Header.Component.ts
+	  -------------------
+		
+	@Output() featureSelected = new EventEmitter<string>(); // passed the data to parent 
+	onSelect(feature: string) {
+	this.featureSelected.emit(feature);
+  }
+
+
+ Goto parent App.Component.Html
+ -------------------------------
+ 
+ 
+ <app-header (featureSelected)="onNavigate($event)"></app-header>
+ 
+  <div class="col-md-12">
+      <app-recipes *ngIf="loadedFeature === 'recipe'"></app-recipes>
+      <app-shopping-list *ngIf="loadedFeature !== 'recipe'"></app-shopping-list>
+    </div>
+ 
+ App.Component.ts:
+	loadedFeature = 'recipe';
+  onNavigate(feature: string) {
+    this.loadedFeature = feature;
+  }
+
+
+
+----------------------------------------------------------------------------------**********----------------------------------------------------------------
+
+
+Second class:  Passing the data With Property Binding
+
+Step 1 :  recipe.list html code placed to the Recipe.item.html
+ie:  <a
+      href="#"
+      class="list-group-item clearfix"
+     >
+      <div class="pull-left">
+        <h4 class="list-group-item-heading">{{ recipe.name }}</h4>
+        <p class="list-group-item-text">{{ recipe.description }}</p>
+      </div>
+      <span class="pull-right">
+        <img
+          [src]="recipe.imagePath"
+          alt="{{ recipe.name }}"
+          class="img-responsive"
+          style="max-height: 50px;">
+      </span>
+    </a>
+	
+	
+	Recipe.list.html:
+	----------------
+	
+	 <app-recipe-item *ngFor="let recipeEl of recipes"
+    [recipe]="recipeEl"></app-recipe-item>
+	
+	Recipe.item.component.ts:
+	------------------------
+		@Input() recipe:Recipe
+		
+	Receipe.HTML : As Use Well
+	
+	
+----------------------------------------------------------------------******------------------------------------------------------------------------------
+Important Topic is Passing the data EventBinding and Property Binding
+
+The Goal is If you Click the Receipe item, Selected Item Should be Displed in Receipe Detail Page.This our Goal.
+
+
+So if you click the recepie-item , some how you can catch the recoipe list.
+
+Code :
+		recipe-item.html:
+		-----------------
+		Add on Clik <a 	href="#"
+		class="list-group-item clearfix"
+			(click)="onSelected()">
+			
+		recipe.component.ts:
+		-------------------
+		
+			@Output() recipeSelected = new EventEmitter<void>();
+			
+			onSelected() {
+			this.recipeSelected.emit();
+			}
+			
+
+Step 2 : Go to recipe-list.html:
+		
+		<div class="col-xs-12">
+    <app-recipe-item *ngFor="let recipeEl of recipes"
+    [recipe]="recipeEl" (recipeSelected)="onRecipeSelected(recipeEl)"></app-recipe-item> // Add recipeSelected Event Emitter.
+  </div>
+  
+  recipe-list.ts
+  ---------------
+  
+  @Output() recipeWasSelected = new EventEmitter<Recipe>();
+  
+  onRecipeSelected(recipe: Recipe) {
+    this.recipeWasSelected.emit(recipe);
+   }
+  
+
+recipe.compoent.html:
+----------------------
+
+<div class="col-md-5">
+    <app-recipe-list (recipeWasSelected)="getSelectedEvent($event)"></app-recipe-list>
+  </div>
+
+recipe.compoent.ts:
+--------------------
+
+getSelectedEvent(event){
+    console.log(event);
+  }
+
+check now Working Fine now 
+
+
+next: Recipe.compoent,html:
+
+Initially Recipe was undefined , if recipe data is there , Shows the selected recipe
+
+ <app-recipe-detail *ngIf="selectedRecipe; else otherText"></app-recipe-detail>
+    <ng-template #otherText>
+      please select Recipe
+    </ng-template>
+  </div>
+  
+  
+  ---- Recipe.detail.HTml:
+  
+  <div class="row">
+  <div class="col-xs-12">
+    <img
+      [src]="recipe.imagePath"
+      alt="{{ recipe.name }}"
+      class="img-responsive"
+      style="max-height: 300px;">
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    <h1>{{ recipe.name }}</h1>
+  </div>
+</div>
+
+recipe.detil.compoent.ts
+------------------
+@input() recipe:Recipe
+
+It will works fine
+  
+  
+ ---------------------------------------------------------*** ------------------------------------------------------------------------------------
+ 
+ Now Gol is clicking the shopping menu, Add items into Shopping 
+ 
+ Shopping.edit.html:
+ ------------------
+		 <input type="text" id="name" class="form-control" #nameInput>
+		 <input type="number" id="amount" class="form-control" #amountInput>
+		 <button class="btn btn-success" type="submit" (click)="onAddItem()">Add</button>
+	
+	Shpping.edit.ts:
+	----------------
+	 @ViewChild('nameInput', { static: false }) nameInputRef: ElementRef;
+  @ViewChild('amountInput', { static: false }) amountInputRef: ElementRef;
+  @Output() ingredientAdded = new EventEmitter<Ingredient>();
+  
+  onAddItem() {
+    const ingName = this.nameInputRef.nativeElement.value;
+    const ingAmount = this.amountInputRef.nativeElement.value;
+    const newIngredient = new Ingredient(ingName, ingAmount);
+    this.ingredientAdded.emit(newIngredient);
+  }
+	
+
+Shopping.list.html
+------------------
+   <app-shopping-edit (ingredientAdded)="onIngredientAdded($event)"></app-shopping-edit>
+    <ul class="list-group">
+      <a
+        class="list-group-item"
+        style="cursor: pointer"
+        *ngFor="let ingredient of ingredients"
+      >
+        {{ ingredient.name }} ({{ ingredient.amount }})
+      </a>
+    </ul>
+	
+	shopping.list.ts:
+	--------------------
+	onIngredientAdded(ingredient: Ingredient) {
+    this.ingredients.push(ingredient);
+  }

@@ -1,0 +1,202 @@
+Services:
+---------
+
+create a sub-folder i.e(logging.services.ts)
+ -- create a class LoggingService
+ code is : 
+	export class LoggingService {
+    logServiceMethod(status:string){
+        console.log(`A server status changed,new Status ${status}`)
+		}
+		}
+
+
+then Goto : new-account.component.ts
+			add line public service2 = new LoggingService();(top)
+			in this method: onCreateAccount(){
+			this.service2.logServiceMethod(accountStatus);
+			}
+
+
+explantion : public service2 = new LoggingService(); creating the object useing this syntax is wrong 
+				Angular provices the much more easy way. that is called Dependecy Ijection
+				angualr alredy provinding dependecy injection , i will explan next class
+			
+
+-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------			
+				
+				
+	
+	What Is Dependecy InJection: 
+	----------------------------
+	 Dependecy injecction, means Inject your service in your component that is in Your Constructor.
+	 let see example :
+	 new.account.ts:
+			constructor(private logging:LoggingService){}
+			and call your method
+	
+	go to yourservice : 
+				import {  Injectable } from "@angular/core";
+
+			@Injectable()
+			export class LoggingService {
+			logServiceMethod(status:string){
+			console.log(`A server status changed,new Status ${status}`)
+			}
+			}
+
+
+	go to app.module.ts 
+	-------------------   places in providers Array
+	
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Creating the DataService:
+
+create a accunt.service.ts:
+---------------------------
+
+		 remove the code in appcompont.html and pasted into new service
+		 the code is :
+				import { Injectable } from "@angular/core";
+
+@Injectable()
+export class AccountService {
+  public  accounts = [
+        {
+          name: 'Master Account',
+          status: 'active'
+        },
+        {
+          name: 'Testaccount',
+          status: 'inactive'
+        },
+        {
+          name: 'Hidden Account',
+          status: 'unknown'
+        }
+      ];
+
+
+      onAddAccount(name:string,status:string){
+        this.accounts.push({name:name,status:status});
+
+      }
+      updateStaus(id:number, status:string){
+        this.accounts[id].status = status;
+    }
+}
+
+
+App.component.ts:
+-------------------------------
+
+import { Component, OnInit } from '@angular/core';
+import { LoggingService } from './logging.service';
+import { AccountService } from './account.service';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent implements OnInit{
+
+  public accounts:Array<{name:string,status:string}>
+    constructor(private accountService:AccountService){}
+
+  ngOnInit(){
+      this.accounts = this.accountService.accounts;
+  }
+  
+
+}
+
+
+now go to new-account.component.ts:
+-------------------------------------
+
+onCreateAccount(accountName: string, accountStatus: string) {
+    // this.accountAdded.emit({
+    //   name: accountName,
+    //   status: accountStatus
+    // });
+   // this.loggingService.logServiceMethod(accountStatus);
+    this.accountSerice.onAddAccount(accountName,accountStatus);
+    
+  }
+  
+  IT will Work
+  
+  
+  -------------------------------------------- *** ----------------------------------------------------------------------------
+  
+  Now goal is , if you click bellow button's so need to chnage the values account.componet.ts
+
+	account.component.ts:
+		 onSetTo(status: string) {
+    // this.statusChanged.emit({id: this.id, newStatus: status});
+    this.accountService.accounts[this.id].status = status;
+    console.log('A server status changed, new status: ' + status);
+  }
+  
+  
+  --------------------------------- Working Fine for Allcode ----------------------------------------------------
+
+	Serives --> Hrirachical Injection, you can inject compoent level, and Module level,
+	servie is no meta data, use Injectble() declarator.
+	Services are easy to maintainthe code, Useing services we can share the data across the components
+	easy to create a service , 
+	Check the Example - How much code is Reduced.
+	
+	-- Now Cross -communication Components
+		suppose trigger in one component, and data passed in another componet  ,
+		
+		account.service.ts:
+			statusUpdated = new EvventEmitter();
+			
+	Step -2 :account.component.ts:
+	
+	onSetTo(status: string) {
+    // this.statusChanged.emit({id: this.id, newStatus: status});
+    this.accountService.accounts[this.id].status = status;
+    console.log('A server status changed, new status: ' + status);
+    this.accountService.statusUpdated.emit(status);
+  }
+  
+  step 3: new-account.component
+  
+  code: 
+  
+  constructor(private loggingService :LoggingService,private accountSerice:AccountService) {
+    this.accountSerice.statusUpdated.subscribe((data) => {
+      alert(`data is loggied ${data}`);
+    })
+	
+	
+	
+	Angular  6 on words
+	Services in Angular 6+
+If you're using Angular 6+ (check your package.json  to find out), you can provide application-wide services in a different way.
+
+Instead of adding a service class to the providers[]  array in AppModule , you can set the following config in @Injectable() :
+
+@Injectable({providedIn: 'root'})
+export class MyService { ... }
+This is exactly the same as:
+
+export class MyService { ... }
+and
+
+import { MyService } from './path/to/my.service';
+ 
+@NgModule({
+    ...
+    providers: [MyService]
+})
+export class AppModule { ... }
+Using this new syntax is completely optional, the traditional syntax (using providers[] ) will still work. The "new syntax" does offer one advantage though: Services can be loaded lazily by Angular (behind the scenes) and redundant code can be removed automatically. This can lead to a better performance and loading speed - though this really only kicks in for bigger services and apps in general.
+	
+	-------- So Far Looks looks good  Right-------------
+ 
